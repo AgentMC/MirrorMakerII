@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.32328.378
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MirrorMakerII", "MirrorMakerII\MirrorMakerII.csproj", "{FD932E74-EFCC-4854-A1C7-5A82F13AB635}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MirrorMakerII", "MirrorMakerII\MirrorMakerII.csproj", "{FD932E74-EFCC-4854-A1C7-5A82F13AB635}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScannerCore", "SizeScanner\ScannerCore\ScannerCore.csproj", "{6D859228-A706-4AE9-B394-078522AA4DE5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{FD932E74-EFCC-4854-A1C7-5A82F13AB635}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FD932E74-EFCC-4854-A1C7-5A82F13AB635}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FD932E74-EFCC-4854-A1C7-5A82F13AB635}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D859228-A706-4AE9-B394-078522AA4DE5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
