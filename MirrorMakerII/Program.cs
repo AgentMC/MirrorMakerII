@@ -18,10 +18,32 @@ while (runners.Any(r => r.IsAlive))
     Thread.Sleep(100);
 }
 //runners.ForEach(runner => runner.Join());
-
+var backupFolders = RemoveBackups(fsDst);
 Compare(fsSrc, fsDst);
-Console.WriteLine("Complete.");
+
+Console.WriteLine("Compare complete.");
+
+Dictionary<string, FsItem> flSrc = new Dictionary<string, FsItem>(), flDst = new Dictionary<string, FsItem>();
+FlattenTree(fsSrc, null, flSrc);
+FlattenTree(fsDst, null, flDst);
+
+
 Console.ReadKey();
+
+static List<string> RemoveBackups(FsItem destination)
+{
+    var result = new List<string>();
+    for (int i = destination.Items.Count - 1; i >= 0; i--)
+    {
+        FsItem? item = destination.Items[i];
+        if (item.Name.StartsWith("$mm$bckp$"))
+        {
+            result.Add(item.Name);
+            destination.Items.RemoveAt(i);
+        }
+    }
+    return result;
+}
 
 static void Compare(FsItem source, FsItem destination)
 {
@@ -36,7 +58,7 @@ static void Compare(FsItem source, FsItem destination)
             {
                 d--;
                 dItem = d >= 0 ? destination.Items[d] : null;
-            } while (dItem != null && (dItem.Name != sItem.Name || dItem.IsDir != sItem.IsDir));
+            } while (dItem != null && (!dItem.Name.Equals(sItem.Name, StringComparison.OrdinalIgnoreCase) || dItem.IsDir != sItem.IsDir));
             if (dItem != null) //matched
             {
                 if (sItem.IsDir)
@@ -55,3 +77,18 @@ static void Compare(FsItem source, FsItem destination)
     }
 }
 
+static void FlattenTree(FsItem fsItem, string? location, Dictionary<string, FsItem> host)
+{
+    location = (location ?? string.Empty) + (fsItem.Name + Path.DirectorySeparatorChar);
+    foreach (var item in fsItem.Items)
+    {
+        if (item.IsDir)
+        {
+            FlattenTree(item, location, host);
+        }
+        else
+        {
+            host[location + item.Name] = item;
+        }
+    }
+}
