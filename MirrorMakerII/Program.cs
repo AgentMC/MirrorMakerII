@@ -3,10 +3,14 @@ using MirrorMakerII;
 
 #pragma warning disable 8604, 8602, 8600
 
+const string BackupFormat = "$mm$bckp$";
 //string source = @"D:\hackd",
 //       destination = @"Z:\Backup\Mike";
 string source = @"D:\hackd\Pix",
-       destination = @"C:\Test";
+       destination = @"C:\Temp",
+       destinationBackupPath = null;
+int    backupLevel = 1;
+
 
 var runners = new List<Thread>();
 //File System Tree objects
@@ -80,21 +84,59 @@ operation.FilesToCopy = flSrc.Keys.Select(k => new FileReference()
 Console.WriteLine("Sync preparation complete.");
 
 //Execute
-//Todo: backup
 /* exec order:
+ * 0. Backup folders pre-processing
+ * 0.A. From 9 to max(backupLevel-1, 0) excl. - delete backup folders recursively
+ * 0.B. If backupLevel > 1 from backupLevel-1 to 1 - increment backup counter on folder
  * 1. Create folders if necessary, recoursive
- * 2. Delete files
+ * 2.A. Delete files if backup level == 0
+ * 2.B. Move files to backup folder if backup level > 0
  * 3. Move files
  * 4. Copy files
  * 5. Delete folders if necessary, reverse-recoursive
 */
+for (int i = 9; i > 0; i--)
+{
+    var backupFolderName = BackupFormat + i;
+    var oldPath = Path.Combine(destination, backupFolderName);
+    var newPath = Path.Combine(destination, BackupFormat + (i + 1));
+
+    if (backupFolders.Contains(backupFolderName))
+    {
+        if (i >= backupLevel)
+        {
+            DeleteBackupFolder(oldPath);
+        }
+        else
+        {
+            ShiftBackupFolder(oldPath, newPath);
+        }
+    }
+    destinationBackupPath = oldPath;
+}
 foreach (var createFolder in operation.FoldersToMaybeCreate)
 {
     CreateFolderIfNecessaryRecoursive(createFolder);
 }
+bool backupFolderCreated = false;
 foreach (var deleteFile in operation.FilesToDelete)
 {
-    DeleteOldFile(deleteFile);
+    if(backupLevel == 0)
+    {
+        DeleteOldFile(deleteFile);
+    }
+    else
+    {
+        if (!backupFolderCreated)
+        {
+            CreateFolderIfNecessaryRecoursive(destinationBackupPath);
+            backupFolderCreated = true;
+        }
+        var newPath = Rebase(deleteFile, destination, destinationBackupPath);
+        var newPathFodler = Path.GetDirectoryName(newPath);
+        CreateFolderIfNecessaryRecoursive(newPathFodler);
+        MoveExistingFile(deleteFile, newPath);
+    }
 }
 foreach (var moveFile in operation.FilesToMove)
 {
@@ -120,7 +162,7 @@ static List<string> RemoveBackups(FsItem destination)
     for (int i = destination.Items.Count - 1; i >= 0; i--)
     {
         FsItem? item = destination.Items[i];
-        if (item.Name.StartsWith("$mm$bckp$"))
+        if (item.Name.StartsWith(BackupFormat))
         {
             result.Add(item.Name);
             destination.Items.RemoveAt(i);
@@ -257,6 +299,36 @@ static Exception? DeleteOldFolderIfNecessaryRecursive(string folder, string root
     catch (Exception ex)
     {
         Console.WriteLine($"ERROR checking or deleting folder: {folder}. {ex}");
+        return ex;
+    }
+    return null;
+}
+
+static Exception? DeleteBackupFolder(string folder)
+{
+    try
+    {
+        Directory.Delete(folder, true);
+        Console.WriteLine($"Deleted backup folder: {folder}.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"ERROR deleting backup folder: {folder}. {ex}");
+        return ex;
+    }
+    return null;
+}
+
+static Exception? ShiftBackupFolder(string oldFolder, string newFolder)
+{
+    try
+    {
+        Directory.Move(oldFolder, newFolder);
+        Console.WriteLine($"Moved backup folder: {oldFolder} ==> {newFolder}.");
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"ERROR moving backup folder: {oldFolder} ==> {newFolder}. {ex}");
         return ex;
     }
     return null;
