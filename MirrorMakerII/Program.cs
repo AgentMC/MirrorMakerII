@@ -67,7 +67,7 @@ operation.FilesToMove = flDst.Select(d => new
                                  To = flSrc.FirstOrDefault(s => s.Value.Name.Equals(d.Value.Name, StringComparison.OrdinalIgnoreCase)
                                                              && s.Value.Size == d.Value.Size
                                                              && s.Value.LastModified == d.Value.LastModified)
-                                             .Key
+                                           .Key
                              })
                              .Where(pair => pair.To != null)
                              .Select(pair => new FileReference()
@@ -229,12 +229,15 @@ static IEnumerable<string> GetUniqueFolders(IEnumerable<string> fromCollection, 
     return key2Path(fromCollection, fromRoot.Length).Except(key2Path(exceptCollection, exceptRoot.Length), StringComparer.OrdinalIgnoreCase);
 }
 
+List<string> createdFolders = new();
 void CreateFolderIfNecessaryRecoursive(string folder, bool backupActivity)
 {
+    if (createdFolders.Contains(folder)) return;
     try
     {
         Directory.CreateDirectory(folder);
         ((Log)(backupActivity ? l.BackupFolderCreate : l.MirrorFolderCreate))(folder);
+        createdFolders.Add(folder);
     }
     catch (Exception ex)
     {
