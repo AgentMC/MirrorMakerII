@@ -1,5 +1,7 @@
 ﻿using ScannerCore;
 using MirrorMakerII;
+using Log = System.Action<string>;
+using Log2 = System.Action<string, string>;
 
 #pragma warning disable 8604, 8602, 8600
 
@@ -27,29 +29,35 @@ Dictionary<string, FsItem> flSrc = new(),
                            flDst = new();
 //The processing directive
 OperationSummary operation = new();
+//Logger
+var l = new MMLogger(null);
 
 //Scan
+l.Start(source, destination, backupLevel);
 runners.Add(thSrc);
 runners.Add(thDst);
 runners.ForEach(runner => runner.Start());
+#if DEBUG
 while (runners.Any(r => r.IsAlive))
 {
     Console.WriteLine($"S => {(thSrc.IsAlive ? scSrc.CurrentScanned : "completed.")}");
     Console.WriteLine($"D => {(thDst.IsAlive ? scDst.CurrentScanned : "completed.")}");
     Thread.Sleep(100);
 }
-//runners.ForEach(runner => runner.Join());
-Console.WriteLine("Tree building complete.");
+#else
+runners.ForEach(runner => runner.Join());
+#endif
+l.Basic("Tree building complete.");
 
 //Process file trees, find differences
 var backupFolders = RemoveBackups(fsDst); 
 Compare(fsSrc, fsDst);
-Console.WriteLine("Compare complete.");
+l.Basic("Compare complete.");
 
 //Classify differences found
 FlattenTree(fsSrc, null, flSrc);
 FlattenTree(fsDst, null, flDst);
-Console.WriteLine("Flattening complete.");
+l.Basic("Flattening complete.");
 
 operation.FoldersToMaybeCreate = GetUniqueFolders(flSrc.Keys, flDst.Keys, source, destination).Select(f => destination + f).ToList();
 operation.FoldersToMaybeDelete = GetUniqueFolders(flDst.Keys, flSrc.Keys, destination, source).Select(f => destination + f).ToList();
@@ -81,7 +89,7 @@ operation.FilesToCopy = flSrc.Keys.Select(k => new FileReference()
                                        To = Rebase(k, source, destination)
                                    })
                                    .ToList();
-Console.WriteLine("Sync preparation complete.");
+l.Basic("Sync preparation complete.");
 
 //Execute
 /* exec order:
@@ -116,7 +124,7 @@ for (int i = 9; i > 0; i--)
 }
 foreach (var createFolder in operation.FoldersToMaybeCreate)
 {
-    CreateFolderIfNecessaryRecoursive(createFolder);
+    CreateFolderIfNecessaryRecoursive(createFolder, false);
 }
 bool backupFolderCreated = false;
 foreach (var deleteFile in operation.FilesToDelete)
@@ -129,18 +137,18 @@ foreach (var deleteFile in operation.FilesToDelete)
     {
         if (!backupFolderCreated)
         {
-            CreateFolderIfNecessaryRecoursive(destinationBackupPath);
+            CreateFolderIfNecessaryRecoursive(destinationBackupPath, true);
             backupFolderCreated = true;
         }
         var newPath = Rebase(deleteFile, destination, destinationBackupPath);
         var newPathFodler = Path.GetDirectoryName(newPath);
-        CreateFolderIfNecessaryRecoursive(newPathFodler);
-        MoveExistingFile(deleteFile, newPath);
+        CreateFolderIfNecessaryRecoursive(newPathFodler, true);
+        MoveExistingFile(deleteFile, newPath, true);
     }
 }
 foreach (var moveFile in operation.FilesToMove)
 {
-    MoveExistingFile(moveFile.From, moveFile.To);
+    MoveExistingFile(moveFile.From, moveFile.To, false);
 }
 foreach (var copyFile in operation.FilesToCopy)
 {
@@ -150,11 +158,7 @@ foreach (var deleteFolder in operation.FoldersToMaybeDelete)
 {
     DeleteOldFolderIfNecessaryRecursive(deleteFolder, destination);
 }
-Console.WriteLine("Sync complete.");
-
-
-
-Console.ReadKey();
+l.Basic("Sync complete.");
 
 static List<string> RemoveBackups(FsItem destination)
 {
@@ -225,113 +229,99 @@ static IEnumerable<string> GetUniqueFolders(IEnumerable<string> fromCollection, 
     return key2Path(fromCollection, fromRoot.Length).Except(key2Path(exceptCollection, exceptRoot.Length), StringComparer.OrdinalIgnoreCase);
 }
 
-static Exception? CreateFolderIfNecessaryRecoursive(string folder)
+void CreateFolderIfNecessaryRecoursive(string folder, bool backupActivity)
 {
     try
     {
         Directory.CreateDirectory(folder);
-        Console.WriteLine($"Created directory structure if not existed: {folder}.");
+        ((Log)(backupActivity ? l.BackupFolderCreate : l.MirrorFolderCreate))(folder);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR creating directory structure: {folder}. {ex}");
-        return ex;
+        l.ErrorFolderCreate(folder, ex);
     }
-    return null;
 }
 
-static Exception? MoveExistingFile(string from, string to)
+void MoveExistingFile(string from, string to, bool backupActivity)
 {
     try
     {
         File.Move(from, to, true);
-        Console.WriteLine($"Moved existing file: {from} ==> {to}.");
+        ((Log2)(backupActivity ? l.BackupFileMove : l.MirrorFileMove))(from, to);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR moving existing file: {from} ==> {to}. {ex}");
-        return ex;
+        l.ErrorFileMove(from, to, ex);
     }
-    return null;
 }
 
-static Exception? CopyNewFile(string from, string to)
+void CopyNewFile(string from, string to)
 {
     try
     {
         File.Copy(from, to, true);
-        Console.WriteLine($"Copied new file: {from} ==> {to}.");
+        l.MirrorFileCopy(from, to);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR copying new file: {from} ==> {to}. {ex}");
-        return ex;
+        l.ErrorFileCopy(from, to, ex);
     }
-    return null;
 }
 
-static Exception? DeleteOldFile(string file)
+void DeleteOldFile(string file)
 {
     try
     {
         File.Delete(file);
-        Console.WriteLine($"Deleted file: {file}.");
+        l.MirrorFileDelete(file);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR deleting file: {file}. {ex}");
-        return ex; 
+        l.ErrorFileDelete(file, ex);
     }
-    return null;
 }
 
-static Exception? DeleteOldFolderIfNecessaryRecursive(string folder, string root)
+void DeleteOldFolderIfNecessaryRecursive(string folder, string root)
 {
     try
     {
         while (!string.Equals(folder, root, StringComparison.OrdinalIgnoreCase) && !Directory.EnumerateFileSystemEntries(folder).Any())
         {
             Directory.Delete(folder);
-            Console.WriteLine($"Deleted empty directory structure: {folder}.");
+            l.MirrorFolderDelete(folder);
             folder = Path.GetDirectoryName(folder);
         }
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR checking or deleting folder: {folder}. {ex}");
-        return ex;
+        l.ErrorFolderDelete(folder, ex);
     }
-    return null;
 }
 
-static Exception? DeleteBackupFolder(string folder)
+void DeleteBackupFolder(string folder)
 {
     try
     {
         Directory.Delete(folder, true);
-        Console.WriteLine($"Deleted backup folder: {folder}.");
+        l.BackupFolderDelete(folder);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR deleting backup folder: {folder}. {ex}");
-        return ex;
+        l.ErrorFolderDelete(folder, ex);
     }
-    return null;
 }
 
-static Exception? ShiftBackupFolder(string oldFolder, string newFolder)
+void ShiftBackupFolder(string oldFolder, string newFolder)
 {
     try
     {
         Directory.Move(oldFolder, newFolder);
-        Console.WriteLine($"Moved backup folder: {oldFolder} ==> {newFolder}.");
+        l.BackupFolderMove(oldFolder, newFolder);
     }
     catch (Exception ex)
     {
-        Console.WriteLine($"ERROR moving backup folder: {oldFolder} ==> {newFolder}. {ex}");
-        return ex;
+        l.ErrorFolderMove(oldFolder, newFolder, ex);
     }
-    return null;
 }
 
 static string Rebase(string path, string pathRoot, string newRoot)
