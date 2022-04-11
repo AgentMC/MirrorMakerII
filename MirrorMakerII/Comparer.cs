@@ -4,9 +4,13 @@ using static MirrorMakerII.Shared;
 
 namespace MirrorMakerII
 {
-    internal class Comparer
+    internal class Comparer : IProgress
     {
-        public static (OperationSummary, List<string>) Compare (FsItem fsSrc, FsItem fsDst, MMLogger l)
+        public double Progress { get; private set; }
+
+        public string Current { get; private set; } = "Comparing...";
+
+        public (OperationSummary, List<string>) Compare (FsItem fsSrc, FsItem fsDst, MMLogger l)
         {
             //The processing directive
             OperationSummary operation = new();
@@ -54,7 +58,10 @@ namespace MirrorMakerII
                 To = Rebase(k, fsSrc.Name, fsDst.Name)
             })
                                                .ToList();
-            l.Basic("Sync preparation complete.");
+            Progress = 1.0;
+            Current = "Sync preparation complete.";
+            l.Basic(Current);
+
             return (operation, backupFolders);
         }
 

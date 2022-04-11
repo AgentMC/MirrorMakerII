@@ -6,10 +6,14 @@ string source = @"D:\hackd\Pix",
        destination = @"C:\Temp";
 int    backupLevel = 1;
 
-MMLogger l = new(null);
 
-l.Start(source, destination, backupLevel);
+InputEntry entry = new(source, destination, backupLevel);
+MMLogger l = new("MMII.log");
+var session = new Session(l);
+var runThread = new Thread(() => session.Run(entry));
+runThread.Start();
+while (session.Progress < 1.0)
+{
+    Console.WriteLine($"{session.Progress * 100:F2}% {session.Current}");
+}
 
-(var fsSrc, var fsDst) = Scanner.Scan(source, destination, l);
-(var operation, var backupFolders) = Comparer.Compare(fsSrc, fsDst, l);
-new OperationRunner(l).Run(operation, backupFolders, backupLevel, destination);

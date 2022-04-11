@@ -4,7 +4,7 @@ using Log2 = System.Action<string, string>;
 
 namespace MirrorMakerII
 {
-    internal class OperationRunner
+    internal class OperationRunner : IProgressEx
     {
         const string BackupFormat = "$mm$bckp$";
 
@@ -13,24 +13,33 @@ namespace MirrorMakerII
         readonly List<string> createdFolders = new();
         string? destinationBackupPath = null;
 
+
+        public double Progress { get; private set; }
+
+        public string Current { get; private set; } = "Starting file operations.";
+
+        public void SetCurrent(string value) => Current = value;
+
+
         public OperationRunner(MMLogger logger)
         {
             l = logger;
+            l.StatusReflector = this;
         }
 
         public void Run (OperationSummary operation, List<string> backupFolders, int backupLevel, string destination)
         {
             //Execute
             /* exec order:
-             * 0. Backup folders pre-processing
-             * 0.A. From 9 to max(backupLevel-1, 0) excl. - delete backup folders recursively
-             * 0.B. If backupLevel > 1 from backupLevel-1 to 1 - increment backup counter on folder
-             * 1. Create folders if necessary, recoursive
-             * 2.A. Delete files if backup level == 0
-             * 2.B. Move files to backup folder if backup level > 0
-             * 3. Move files
-             * 4. Copy files
-             * 5. Delete folders if necessary, reverse-recoursive
+             * 0. Backup folders pre-processing                                                          5%
+             * 0.A. From 9 to max(backupLevel-1, 0) excl. - delete backup folders recursively            
+             * 0.B. If backupLevel > 1 from backupLevel-1 to 1 - increment backup counter on folder      
+             * 1. Create folders if necessary, recoursive                                                5%
+             * 2.A. Delete files if backup level == 0                                                    
+             * 2.B. Move files to backup folder if backup level > 0                                      8%
+             * 3. Move files                                                                             4%
+             * 4. Copy files                                                                             75%
+             * 5. Delete folders if necessary, reverse-recoursive                                        3%
             */
             for (int i = 9; i > 0; i--)
             {
@@ -51,11 +60,14 @@ namespace MirrorMakerII
                 }
                 destinationBackupPath = oldPath;
             }
+            Progress = 0.05;
             l.Basic("Backups refresh complete.");
             foreach (var createFolder in operation.FoldersToMaybeCreate)
             {
                 CreateFolderIfNecessaryRecoursive(createFolder, false);
+                Progress += 0.05/operation.FoldersToMaybeCreate.Count;
             }
+            Progress = 0.1;
             bool backupFolderCreated = false;
             foreach (var deleteFile in operation.FilesToDelete)
             {
@@ -75,20 +87,29 @@ namespace MirrorMakerII
                     CreateFolderIfNecessaryRecoursive(newPathFodler, true);
                     MoveExistingFile(deleteFile, newPath, true);
                 }
+                Progress += 0.08 / operation.FilesToDelete.Count;
             }
+            Progress = 0.18;
             foreach (var moveFile in operation.FilesToMove)
             {
                 MoveExistingFile(moveFile.From, moveFile.To, false);
+                Progress += 0.04 / operation.FilesToMove.Count;
             }
+            Progress = 0.22;
             foreach (var copyFile in operation.FilesToCopy)
             {
                 CopyNewFile(copyFile.From, copyFile.To);
+                Progress += 0.75 / operation.FilesToCopy.Count;
             }
+            Progress = 0.97;
             foreach (var deleteFolder in operation.FoldersToMaybeDelete)
             {
                 DeleteOldFolderIfNecessaryRecursive(deleteFolder, destination);
+                Progress += 0.03 / operation.FoldersToMaybeDelete.Count;
             }
+            Progress = 1;
             l.Basic("Sync complete.");
+            l.StatusReflector = null;
         }
 
         void CreateFolderIfNecessaryRecoursive(string folder, bool backupActivity)

@@ -3,9 +3,16 @@
 
 namespace MirrorMakerII
 {
-    internal class Scanner
+    internal class Scanner:IProgress
     {
-        public static (FsItem, FsItem) Scan (string source, string destination, MMLogger l)
+        private volatile int _done = 0;
+        private volatile string? _current = "(initialization)";
+
+        public double Progress => _done / 2.0;
+
+        public string Current => $"Scanning: {_current}";
+
+        public (FsItem, FsItem) Scan (string source, string destination, MMLogger l)
         {
             var scanners = new List<Thread>();
             //File System Tree objects
@@ -15,25 +22,28 @@ namespace MirrorMakerII
             DriveScanner scSrc = new(),
                          scDst = new();
             //Threads
-            Thread thSrc = new(() => fsSrc = scSrc.ScanDirectory(source)),
-                   thDst = new(() => fsDst = scDst.ScanDirectory(destination));
+            Thread thSrc = new(() => fsSrc = RunInternal(source, scSrc)),
+                   thDst = new(() => fsDst = RunInternal(destination, scDst));
 
             //Scan
             scanners.Add(thSrc);
             scanners.Add(thDst);
             scanners.ForEach(scanner => scanner.Start());
-#if DEBUG
-            while (scanners.Any(r => r.IsAlive))
+
+            while (_done < 2)
             {
-                Console.WriteLine($"S => {(thSrc.IsAlive ? scSrc.CurrentScanned : "completed.")}");
-                Console.WriteLine($"D => {(thDst.IsAlive ? scDst.CurrentScanned : "completed.")}");
-                Thread.Sleep(100);
+                _current = thSrc.IsAlive ? scSrc.CurrentScanned : thDst.IsAlive ? scDst.CurrentScanned : "(completed)";
+                Thread.Sleep(10);
             }
-#else
-            runners.ForEach(runner => runner.Join());
-#endif
             l.Basic("Tree building complete.");
             return (fsSrc, fsDst);
+        }
+
+        private FsItem RunInternal(string path, DriveScanner scanner)
+        {
+            var result = scanner.ScanDirectory(path);
+            Interlocked.Increment(ref _done);
+            return result;
         }
     }
 }

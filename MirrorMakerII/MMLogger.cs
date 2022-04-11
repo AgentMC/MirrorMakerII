@@ -45,6 +45,8 @@ namespace MirrorMakerII
             }
         }
 
+        public IProgressEx? StatusReflector { get; set; }
+
         private enum LogType
         {
             GEN,
@@ -69,6 +71,7 @@ namespace MirrorMakerII
         private void Log(LogType lt, string message)
         {
             _stream.WriteLine($"{DateTime.Now:O}\t{lt}\t{message}");
+            if (StatusReflector != null) StatusReflector.SetCurrent(message);
         }
 
         private void Log(LogType lt, string format, params object[] args)
