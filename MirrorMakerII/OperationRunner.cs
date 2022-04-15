@@ -6,7 +6,7 @@ namespace MirrorMakerII
 {
     internal class OperationRunner : IProgressEx
     {
-        const string BackupFormat = "$mm$bckp$";
+        internal const string BackupFormat = "$mm$bckp$";
 
         readonly MMLogger l;
 

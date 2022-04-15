@@ -1,13 +1,5 @@
 ﻿using MirrorMakerII;
-
-//string source = @"D:\hackd",
-//       destination = @"Z:\Backup\Mike";
-
-//string source = @"D:\hackd\Pix",
-//       destination = @"C:\Temp";
-//int    backupLevel = 1;
-//InputEntry entry = new(source, destination, backupLevel);
-
+using System.Text;
 
 MMLogger l = new("MMII.log");
 
@@ -17,12 +9,14 @@ if(parameters.Error != null)
     Console.WriteLine(parameters.Error);
     return;
 }
+
 switch (parameters.Mode)
 {
     case RunMode.Default:
-        RunSession(parameters.Entries[0]);
+        Run(() => new Session(l), (s) => s.Run(parameters.Entries[0]));
         break;
     case RunMode.Batch:
+        Run(() => new SessionBatch(), (s) => s.Run(l, parameters.Entries));
         break;
     case RunMode.Gui:
         Console.WriteLine("Launch in GUI mode (parameterless) not supported by console version.\r\nUse MMII.exe /? to get invokation help.");
@@ -31,15 +25,25 @@ switch (parameters.Mode)
         break;
 }
 
-void RunSession(InputEntry entry)
+void Run<T>(Func<T> ctor, Action<T> task) where T : IProgress
 {
-    var session = new Session(l);
-    var runThread = new Thread(() => session.Run(entry));
+    T progressMeter = ctor();
+    var runThread = new Thread(() => task(progressMeter));
     runThread.Start();
-    while (session.Progress < 1.0)
+
+    var builder = new StringBuilder();
+    var (left, top) = Console.GetCursorPosition();
+    int lastTextLength = 0;
+    while (progressMeter.Progress < 1.0)
     {
-        Console.WriteLine($"{session.Progress * 100:F2}% {session.Current}");
+        builder.Clear();
+        builder.Append($"{progressMeter.Progress * 100:F2}% {progressMeter.Current}");
+        var newTextLength = builder.Length;
+        builder.Append(' ', Math.Max(0, lastTextLength - builder.Length));
+        lastTextLength = newTextLength;
+        Console.SetCursorPosition(left, top);
+        Console.Write(builder.ToString());
+        Thread.Sleep(300);
     }
+    Console.WriteLine("\r\nComplete.");
 }
-
-

@@ -14,14 +14,9 @@ namespace MirrorMakerII
         {
             var entries = new List<InputEntry>();
             Entries = entries;
-            if (args.Length == 1)
+            if (args.Length == 1 && File.Exists(args[0]))
             {
                 Mode = RunMode.Batch;
-                if (!File.Exists(args[0]))
-                {
-                    Error = $"Unable to locate batch input file [{args[0]}].";
-                    return;
-                }
                 using var batchInput = new StreamReader(args[0], Encoding.UTF8);
                 string? row;
                 int rowNr = 0;
