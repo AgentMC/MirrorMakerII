@@ -7,8 +7,8 @@
 
         public InputEntry (string source, string destination, int backupLevel = 0)
         {
-            Source = source;    
-            Destination = destination;  
+            Source = Path.TrimEndingDirectorySeparator(source);
+            Destination = Path.TrimEndingDirectorySeparator(destination);  
             BackupLevel = backupLevel;
         }
     }
