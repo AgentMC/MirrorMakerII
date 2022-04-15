@@ -1,2 +1,4 @@
 [submodule "SizeScanner"]
+	path = SizeScanner
 	url = https://github.com/AgentMC/SizeScanner
+	branch = MMpatch
