@@ -1,9 +1,10 @@
-﻿using MirrorMakerII;
-using System.Text;
+﻿using System.Text;
+using MirrorMakerIICore;
+using MirrorMakerIICore.Infra;
 
-MMLogger l = new("MMII.log");
+var logger = Shared.GetDefaultFileLogger();
+var parameters = Shared.ParseArguments(args);
 
-var parameters = new InputParameters(args);
 if(parameters.Error != null)
 {
     Console.WriteLine(parameters.Error);
@@ -13,10 +14,10 @@ if(parameters.Error != null)
 switch (parameters.Mode)
 {
     case RunMode.Default:
-        Run(() => new Session(l), (s) => s.Run(parameters.Entries[0]));
+        Run(() => new Session(logger), (s) => s.Run(parameters.Entries[0]));
         break;
     case RunMode.Batch:
-        Run(() => new SessionBatch(), (s) => s.Run(l, parameters.Entries));
+        Run(() => new SessionBatch(), (s) => s.Run(logger, parameters.Entries));
         break;
     case RunMode.Gui:
         Console.WriteLine("Launch in GUI mode (parameterless) not supported by console version.\r\nUse MMII.exe /? to get invokation help.");

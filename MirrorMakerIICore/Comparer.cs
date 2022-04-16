@@ -1,8 +1,9 @@
-﻿using ScannerCore;
-using static MirrorMakerII.Shared;
+﻿using MirrorMakerIICore.Infra;
+using ScannerCore;
+using static MirrorMakerIICore.Shared;
 #pragma warning disable 8604, 8602, 8600
 
-namespace MirrorMakerII
+namespace MirrorMakerIICore
 {
     internal class Comparer : IProgress
     {

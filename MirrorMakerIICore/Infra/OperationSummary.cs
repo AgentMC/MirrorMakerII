@@ -1,4 +1,4 @@
-﻿namespace MirrorMakerII
+﻿namespace MirrorMakerIICore.Infra
 {
     internal class OperationSummary
     {

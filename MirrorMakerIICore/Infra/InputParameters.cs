@@ -2,9 +2,9 @@
 
 #pragma warning disable CS8604 // Possible null reference argument.
 
-namespace MirrorMakerII
+namespace MirrorMakerIICore.Infra
 {
-    internal class InputParameters
+    public class InputParameters
     {
         public readonly IReadOnlyList<InputEntry> Entries;
         public readonly string? Error;
@@ -40,20 +40,20 @@ namespace MirrorMakerII
             {
                 Mode = default;
                 var check = CheckArgs(args);
-                if(check.Item2 != null)
+                if (check.Item2 != null)
                 {
                     Error = check.Item2;
                     return;
                 }
                 entries.Add(check.Item1);
             }
-            else if(args.Length == 0)
+            else if (args.Length == 0)
             {
                 Mode = RunMode.Gui;
             }
             else
             {
-                Error = 
+                Error =
 @"Mirror Maker II is a one-directional folder sync tool supporting nested increnmental backup system.
 
 1. Default invokation: MMII.exe Source Destination [Backup level]
@@ -94,7 +94,7 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
             {
                 return (null, $"Unmatched quotes. Make sure parameters are separated by spaces.");
             }
-            if(blocks.Count < 2 || blocks.Count > 3)
+            if (blocks.Count < 2 || blocks.Count > 3)
             {
                 return (null, $"The line contains {blocks.Count} individual parameters, expected only 2 or 3.");
             }
@@ -124,7 +124,7 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
         }
     }
 
-    internal enum RunMode
+    public enum RunMode
     {
         Default, Batch, Gui
     }

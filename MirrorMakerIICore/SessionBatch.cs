@@ -1,6 +1,8 @@
-﻿namespace MirrorMakerII
+﻿using MirrorMakerIICore.Infra;
+
+namespace MirrorMakerIICore
 {
-    internal class SessionBatch : IProgress
+    public class SessionBatch : IProgress
     {
         private IProgress? _current;
         private int _totalComplete, _total;

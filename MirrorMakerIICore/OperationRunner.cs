@@ -1,8 +1,9 @@
-﻿using Log = System.Action<string>;
+﻿using MirrorMakerIICore.Infra;
+using Log = System.Action<string>;
 using Log2 = System.Action<string, string>;
 #pragma warning disable 8604, 8602, 8600
 
-namespace MirrorMakerII
+namespace MirrorMakerIICore
 {
     internal class OperationRunner : IProgressEx
     {
@@ -65,7 +66,7 @@ namespace MirrorMakerII
             foreach (var createFolder in operation.FoldersToMaybeCreate)
             {
                 CreateFolderIfNecessaryRecoursive(createFolder, false);
-                Progress += 0.05/operation.FoldersToMaybeCreate.Count;
+                Progress += 0.05 / operation.FoldersToMaybeCreate.Count;
             }
             Progress = 0.1;
             bool backupFolderCreated = false;

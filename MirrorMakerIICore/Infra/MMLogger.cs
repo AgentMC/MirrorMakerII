@@ -1,8 +1,8 @@
 ﻿using System.Text;
 
-namespace MirrorMakerII
+namespace MirrorMakerIICore.Infra
 {
-    internal class MMLogger : IDisposable
+    public class MMLogger : IDisposable
     {
         readonly TextWriter _stream;
         readonly Encoding _encoding = Encoding.UTF8;
@@ -27,7 +27,7 @@ namespace MirrorMakerII
             }
         }
 
-        ~MMLogger() 
+        ~MMLogger()
         {
             Dispose();
         }

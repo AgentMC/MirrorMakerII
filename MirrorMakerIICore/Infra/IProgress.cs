@@ -1,12 +1,12 @@
-﻿namespace MirrorMakerII
+﻿namespace MirrorMakerIICore.Infra
 {
-    internal interface IProgress
+    public interface IProgress
     {
         double Progress { get; }
         string Current { get; }
     }
 
-    internal interface IProgressEx : IProgress
+    public interface IProgressEx : IProgress
     {
         void SetCurrent(string txt);
     }
