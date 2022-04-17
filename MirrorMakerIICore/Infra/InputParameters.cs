@@ -122,10 +122,29 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
             }
             return (new InputEntry(args[0], args[1], backupLevel), null);
         }
-    }
 
-    public enum RunMode
-    {
-        Default, Batch, Gui
+        public (IProgress, Thread) KickOff(MMLogger logger)
+        {
+            if (Error != null || Mode == RunMode.Gui)
+            {
+                throw new InvalidOperationException("Auto kick-off only possible when no Error parsed and Mode is Default or Batch");
+            }
+            if (Mode == RunMode.Default)
+            {
+                return Run(() => new Session(logger), (s) => s.Run(Entries[0]));
+            }
+            else
+            {
+                return Run(() => new SessionBatch(), (s) => s.Run(logger, Entries));
+            }
+        }
+
+        static (IProgress, Thread) Run<T>(Func<T> ctor, Action<T> task) where T : IProgress
+        {
+            T progressMeter = ctor();
+            var runThread = new Thread(() => task(progressMeter));
+            runThread.Start();
+            return (progressMeter, runThread);
+        }
     }
 }

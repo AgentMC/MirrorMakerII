@@ -1,4 +1,4 @@
-﻿namespace MirrorMakerIICore.Infra
+﻿namespace MirrorMakerIICore
 {
     public interface IProgress
     {

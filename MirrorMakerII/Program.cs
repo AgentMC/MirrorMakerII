@@ -1,8 +1,6 @@
 ﻿using System.Text;
 using MirrorMakerIICore;
-using MirrorMakerIICore.Infra;
 
-var logger = Shared.GetDefaultFileLogger();
 var parameters = Shared.ParseArguments(args);
 
 if(parameters.Error != null)
@@ -14,10 +12,10 @@ if(parameters.Error != null)
 switch (parameters.Mode)
 {
     case RunMode.Default:
-        Run(() => new Session(logger), (s) => s.Run(parameters.Entries[0]));
-        break;
     case RunMode.Batch:
-        Run(() => new SessionBatch(), (s) => s.Run(logger, parameters.Entries));
+        var logger = Shared.GetDefaultFileLogger();
+        var (operation, _) = parameters.KickOff(logger);
+        Monitor(operation);
         break;
     case RunMode.Gui:
         Console.WriteLine("Launch in GUI mode (parameterless) not supported by console version.\r\nUse MMII.exe /? to get invokation help.");
@@ -26,12 +24,8 @@ switch (parameters.Mode)
         break;
 }
 
-void Run<T>(Func<T> ctor, Action<T> task) where T : IProgress
+static void Monitor(IProgress progressMeter) 
 {
-    T progressMeter = ctor();
-    var runThread = new Thread(() => task(progressMeter));
-    runThread.Start();
-
     var builder = new StringBuilder();
     var (left, top) = Console.GetCursorPosition();
     int lastTextLength = 0;

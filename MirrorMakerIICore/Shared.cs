@@ -15,4 +15,9 @@ namespace MirrorMakerIICore
 
         public static InputParameters ParseArguments(string[] args) => new(args);
     }
+
+    public enum RunMode
+    {
+        Default, Batch, Gui
+    }
 }
