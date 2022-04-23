@@ -13,8 +13,7 @@ switch (parameters.Mode)
 {
     case RunMode.Default:
     case RunMode.Batch:
-        var logger = Shared.GetDefaultFileLogger();
-        var (operation, _) = parameters.KickOff(logger);
+        var (operation, _) = parameters.KickOff();
         Monitor(operation);
         break;
     case RunMode.Gui:

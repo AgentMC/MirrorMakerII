@@ -139,7 +139,9 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
             }
         }
 
-        static (IProgress, Thread) Run<T>(Func<T> ctor, Action<T> task) where T : IProgress
+        public (IProgress, Thread) KickOff() => KickOff(Shared.GetDefaultFileLogger());
+
+        private static (IProgress, Thread) Run<T>(Func<T> ctor, Action<T> task) where T : IProgress
         {
             T progressMeter = ctor();
             var runThread = new Thread(() => task(progressMeter));
