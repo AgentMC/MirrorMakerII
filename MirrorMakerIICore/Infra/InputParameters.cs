@@ -10,6 +10,12 @@ namespace MirrorMakerIICore.Infra
         public readonly string? Error;
         public readonly RunMode Mode;
 
+        public InputParameters(string Source, string Destination, int Backup) : this(Array.Empty<string>()) 
+        {
+            Mode = RunMode.Default;
+            ((List<InputEntry>)Entries).Add(new InputEntry(Source, Destination, Backup));
+        }
+
         public InputParameters(string[] args)
         {
             var entries = new List<InputEntry>();

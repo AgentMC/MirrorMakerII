@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WinMirrorMakerII": {
+      "commandName": "Project"
+    },
+    "WMM - backup single": {
+      "commandName": "Project",
+      "commandLineArgs": "D:\\hackd Z:\\Backup\\Mike 1"
+    }
+  }
+}

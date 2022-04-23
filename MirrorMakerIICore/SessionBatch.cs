@@ -12,16 +12,32 @@ namespace MirrorMakerIICore
             _total = entries.Count;
             foreach (var input in entries)
             {
+                CurrentEntryChanged?.Invoke(this, new CurrentEntryEventArgs(input));
                 var session = new Session(logger);
                 _current = session;
                 session.Run(input);
                 _totalComplete++;
                 _current = null;
             }
+            CurrentEntryChanged?.Invoke(this, new CurrentEntryEventArgs(null));
         }
 
         public double Progress => (_totalComplete + (_current?.Progress ?? 0)) / _total;
 
         public string Current => $"{Math.Min(_total, _totalComplete + 1)} / {_total}: {_current?.Current ?? "(>>>)"}";
+
+        public double CurrentEntryProgress => _current?.Progress ?? 0;
+
+        public event EventHandler<CurrentEntryEventArgs>? CurrentEntryChanged;
+    }
+
+    public class CurrentEntryEventArgs: EventArgs
+    {
+        public InputEntry? Entry { get; private set; }
+
+        public CurrentEntryEventArgs(InputEntry? entry)
+        {
+            Entry = entry;
+        }
     }
 }

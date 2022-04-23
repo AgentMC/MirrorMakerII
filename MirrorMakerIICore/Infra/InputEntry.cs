@@ -11,5 +11,10 @@
             Destination = Path.TrimEndingDirectorySeparator(destination);
             BackupLevel = backupLevel;
         }
+
+        public override string ToString()
+        {
+            return $"{Source} => {Destination} : {BackupLevel}";
+        }
     }
 }

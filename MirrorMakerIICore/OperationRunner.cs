@@ -99,6 +99,7 @@ namespace MirrorMakerIICore
             Progress = 0.22;
             foreach (var copyFile in operation.FilesToCopy)
             {
+                Current = $"Copying file: {copyFile.From} => {copyFile.To}";
                 CopyNewFile(copyFile.From, copyFile.To);
                 Progress += 0.75 / operation.FilesToCopy.Count;
             }
