@@ -87,13 +87,31 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
             {
                 if (newWord)
                 {
-                    blocks.Add(part);
-                    if (part.StartsWith("\"")) newWord = false;
+                    if (part.StartsWith("\""))
+                    {
+                        if (part.EndsWith("\""))
+                        {
+                            blocks.Add(part.Trim('"'));
+                        }
+                        else
+                        {
+                            blocks.Add(part);
+                            newWord = false;
+                        }
+                    }
+                    else
+                    {
+                        blocks.Add(part);
+                    }
                 }
                 else
                 {
-                    blocks[^1] += part;
-                    if (part.EndsWith("\"")) newWord = true;
+                    blocks[^1] += (" " + part);
+                    if (part.EndsWith("\""))
+                    {
+                        newWord = true;
+                        blocks[^1] = blocks[^1].Trim('"');
+                    }
                 }
             }
             if (!newWord)

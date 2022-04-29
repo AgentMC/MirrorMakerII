@@ -208,7 +208,6 @@
             this.Status.Size = new System.Drawing.Size(935, 23);
             this.Status.TabIndex = 6;
             this.Status.Text = "Ready";
-            this.Status.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             // 
             // label8
             // 

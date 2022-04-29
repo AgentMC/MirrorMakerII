@@ -6,6 +6,11 @@
     "WMM - backup single": {
       "commandName": "Project",
       "commandLineArgs": "D:\\hackd Z:\\Backup\\Mike 1"
+    },
+    "WMM - backup multi": {
+      "commandName": "Project",
+      "commandLineArgs": "C:\\Temp\\Test.txt",
+      "remoteDebugEnabled": false
     }
   }
 }

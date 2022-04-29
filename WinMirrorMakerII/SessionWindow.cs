@@ -59,6 +59,11 @@ namespace WinMirrorMakerII
 
         private void BatchCurrentEntryChanged(object? sender, CurrentEntryEventArgs e)
         {
+            if (InvokeRequired)
+            {
+                Invoke(() => BatchCurrentEntryChanged(sender, e));
+                return;
+            }
             if(e.Entry == null) //game over
             {
                 MonitorTimer.Stop();

@@ -4,7 +4,7 @@
     <DebuggerFlavor>ProjectDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup>
-    <ActiveDebugProfile>WMM - backup single</ActiveDebugProfile>
+    <ActiveDebugProfile>WMM - backup multi</ActiveDebugProfile>
   </PropertyGroup>
   <ItemGroup>
     <Compile Update="SessionWindow.cs">
