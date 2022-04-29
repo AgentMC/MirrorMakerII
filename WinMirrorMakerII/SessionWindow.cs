@@ -54,6 +54,7 @@ namespace WinMirrorMakerII
                 _batchRunner.CurrentEntryChanged += BatchCurrentEntryChanged;
             }
             MonitorTimer.Start();
+            API.TaskbarManager.SetState(Handle, API.TaskbarManager.TaskbarStates.Normal);
         }
 
         private void BatchCurrentEntryChanged(object? sender, CurrentEntryEventArgs e)
@@ -87,6 +88,7 @@ namespace WinMirrorMakerII
             if (_operationProgress.Progress == 1 && _batchRunner == null)
             {
                 MonitorTimer.Stop();
+                API.TaskbarManager.SetState(Handle, API.TaskbarManager.TaskbarStates.NoProgress);
                 if (_closeOnSessionComplete)
                 {
                     Close();
@@ -94,14 +96,16 @@ namespace WinMirrorMakerII
                 }
             }
             Status.Text = _operationProgress.Current;
+            var totalProgress = (int)(_operationProgress.Progress * 100);
+            API.TaskbarManager.SetValue(Handle, (UInt64)totalProgress, 100);
             if(_batchRunner != null) //Batch mode
             {
-                TotalProgress.Value = (int)(_operationProgress.Progress * 100);
+                TotalProgress.Value = totalProgress;
                 SessionProgress.Value = (int)(_batchRunner.CurrentEntryProgress * 100);
             }
             else //Gui or Default
             {
-                SessionProgress.Value = (int)(_operationProgress.Progress * 100);
+                SessionProgress.Value = totalProgress;
             }
         }
 
