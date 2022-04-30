@@ -52,13 +52,16 @@ namespace MirrorMakerIICore
                 flDst.Remove(moveFrom.From);
                 flSrc.Remove(moveFrom.FromReference);
             }
-            operation.FilesToDelete = flDst.Keys.Where(d => !flSrc.ContainsKey(Rebase(d, fsDst.Name, fsSrc.Name))).ToList();
+            //this is how we can get _purely_ deleted files
+            //operation.FilesToDelete = flDst.Keys.Where(d => !flSrc.ContainsKey(Rebase(d, fsDst.Name, fsSrc.Name))).ToList();
+            //however, for the backup purposes, we also want to take the files that were updated, and will be overwritten
+            operation.FilesToDelete = flDst.Keys.ToList();
             operation.FilesToCopy = flSrc.Keys.Select(k => new FileReference()
-            {
-                From = k,
-                To = Rebase(k, fsSrc.Name, fsDst.Name)
-            })
-                                               .ToList();
+                                               {
+                                                   From = k,
+                                                   To = Rebase(k, fsSrc.Name, fsDst.Name)
+                                               })
+                                              .ToList();
             Progress = 1.0;
             Current = "Sync preparation complete.";
             l.Basic(Current);
@@ -95,7 +98,7 @@ namespace MirrorMakerIICore
                         d--;
                         dItem = d >= 0 ? destination.Items[d] : null;
                     } while (dItem != null && (!dItem.Name.Equals(sItem.Name, StringComparison.OrdinalIgnoreCase) || dItem.IsDir != sItem.IsDir));
-                    if (dItem != null) //matched
+                    if (dItem != null) //matched by name and Dir attribute
                     {
                         if (sItem.IsDir)
                         {
@@ -103,7 +106,7 @@ namespace MirrorMakerIICore
                             if (sItem.Items.Count == 0) source.Items.RemoveAt(s);
                             if (dItem.Items.Count == 0) destination.Items.RemoveAt(d);
                         }
-                        else if (sItem.LastModified == dItem.LastModified && sItem.Size == dItem.Size)
+                        else if (sItem.LastModified == dItem.LastModified && sItem.Size == dItem.Size) //file is uidentical and not changed - remove from lists = do not touch
                         {
                             source.Items.RemoveAt(s);
                             destination.Items.RemoveAt(d);

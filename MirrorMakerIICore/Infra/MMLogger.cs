@@ -86,7 +86,7 @@ namespace MirrorMakerIICore.Infra
         public void MirrorFolderCreate(string folder) => Log(LogType.MDC, "Created directory structure if not existed: {0}.", folder);
         public void ErrorFolderCreate(string folder, Exception e) => Log(LogType.EDC, "Error creating directory structure: {0}. {1}", folder, e.Message);
 
-        public void BackupFileMove(string source, string destination) => Log(LogType.BFM, "Saved deleted file: {0} to temporary location {1}.", source, destination);
+        public void BackupFileMove(string source, string destination) => Log(LogType.BFM, "Saved deleted/updated file: {0} to temporary location {1}.", source, destination);
         public void MirrorFileMove(string source, string destination) => Log(LogType.MFM, "Moved existing file: {0} => {1}.", source, destination);
         public void ErrorFileMove(string source, string destination, Exception e) => Log(LogType.EFM, "Error moving existing file: {0} => {1}. {2}", source, destination, e.Message);
 

@@ -37,9 +37,9 @@ namespace MirrorMakerIICore
              * 0.B. If backupLevel > 1 from backupLevel-1 to 1 - increment backup counter on folder      
              * 1. Create folders if necessary, recoursive                                                5%
              * 2.A. Delete files if backup level == 0                                                    
-             * 2.B. Move files to backup folder if backup level > 0                                      8%
+             * 2.B. Move files to backup folder if backup level > 0 (incl. those to be overwritten)      8%
              * 3. Move files                                                                             4%
-             * 4. Copy files                                                                             75%
+             * 4. Copy new / updated files (no overwrite)                                               75%
              * 5. Delete folders if necessary, reverse-recoursive                                        3%
             */
             for (int i = 9; i > 0; i--)
@@ -146,7 +146,7 @@ namespace MirrorMakerIICore
         {
             try
             {
-                File.Copy(from, to, true);
+                File.Copy(from, to, false);
                 l.MirrorFileCopy(from, to);
             }
             catch (Exception ex)
