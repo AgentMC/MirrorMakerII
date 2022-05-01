@@ -129,5 +129,10 @@ namespace WinMirrorMakerII
                 ManualRun.Enabled = (!string.IsNullOrEmpty(SourceBox.Text) && !string.IsNullOrEmpty(DestinationBox.Text));
             }
         }
+
+        private void ShowLog_Click(object sender, EventArgs e)
+        {
+            new LogParser().ShowDialog();
+        }
     }
 }

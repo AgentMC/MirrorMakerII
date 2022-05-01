@@ -4,8 +4,9 @@ namespace MirrorMakerIICore.Infra
 {
     public class MMLogger : IDisposable
     {
+        public static readonly Encoding DefaultLogEncoding = Encoding.UTF8;
+
         readonly TextWriter _stream;
-        readonly Encoding _encoding = Encoding.UTF8;
         readonly char[] Separators = new[] { '[', ']' };
         readonly bool _disposable;
         bool _disposed;
@@ -21,7 +22,7 @@ namespace MirrorMakerIICore.Infra
                 case "":
                     throw new ArgumentNullException(nameof(filePath));
                 default:
-                    _stream = new StreamWriter(filePath, true, _encoding) { AutoFlush = true };
+                    _stream = new StreamWriter(filePath, true, DefaultLogEncoding) { AutoFlush = true };
                     _disposable = true;
                     break;
             }
@@ -46,27 +47,6 @@ namespace MirrorMakerIICore.Infra
         }
 
         public IProgressEx? StatusReflector { get; set; }
-
-        private enum LogType
-        {
-            GEN,
-            STA,
-            BDC,
-            MDC,
-            EDC,
-            BFM,
-            MFM,
-            EFM,
-            MFC,
-            EFC,
-            MFD,
-            EFD,
-            BDD,
-            MDD,
-            EDD,
-            BDM,
-            EDM
-        }
 
         private void Log(LogType lt, string message)
         {

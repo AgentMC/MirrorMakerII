@@ -49,6 +49,7 @@
             this.BackupLevelSelector = new System.Windows.Forms.NumericUpDown();
             this.folderLoader = new System.Windows.Forms.FolderBrowserDialog();
             this.ManualRun = new System.Windows.Forms.Button();
+            this.ShowLog = new System.Windows.Forms.Button();
             this.BatchPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BackupLevelSelector)).BeginInit();
             this.SuspendLayout();
@@ -243,11 +244,23 @@
             this.ManualRun.UseVisualStyleBackColor = true;
             this.ManualRun.Click += new System.EventHandler(this.GuiRun);
             // 
+            // ShowLog
+            // 
+            this.ShowLog.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.ShowLog.Location = new System.Drawing.Point(841, 100);
+            this.ShowLog.Name = "ShowLog";
+            this.ShowLog.Size = new System.Drawing.Size(106, 23);
+            this.ShowLog.TabIndex = 9;
+            this.ShowLog.Text = "Read Log...";
+            this.ShowLog.UseVisualStyleBackColor = true;
+            this.ShowLog.Click += new System.EventHandler(this.ShowLog_Click);
+            // 
             // SessionWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(959, 395);
+            this.Controls.Add(this.ShowLog);
             this.Controls.Add(this.ManualRun);
             this.Controls.Add(this.BackupLevelSelector);
             this.Controls.Add(this.Status);
@@ -296,5 +309,6 @@
         private NumericUpDown BackupLevelSelector;
         private FolderBrowserDialog folderLoader;
         private Button ManualRun;
+        private Button ShowLog;
     }
 }
