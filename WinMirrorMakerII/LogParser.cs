@@ -126,10 +126,11 @@ namespace WinMirrorMakerII
                             background = e.BackColor;
                         }
                     }
-                    using var bg = BufferedGraphicsManager.Current.Allocate(e.Graphics, e.Bounds);
-                    bg.Graphics.Clear(background);
-                    bg.Graphics.DrawString(text, e.Font ?? lb.Font, foreground, e.Bounds);
-                    bg.Render();
+                    e.Graphics.SetClip(e.Bounds);
+                    e.Graphics.Clear(background);
+                    e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
+                    e.Graphics.DrawString(text, e.Font ?? lb.Font, foreground, e.Bounds, new StringFormat { Alignment = StringAlignment.Near, FormatFlags = StringFormatFlags.FitBlackBox | StringFormatFlags.NoWrap | StringFormatFlags.NoClip, Trimming = StringTrimming.None, LineAlignment = StringAlignment.Far});
+                    if (e.Index == lb.SelectedIndex) e.DrawFocusRectangle();
                 }
                 else
                 {
