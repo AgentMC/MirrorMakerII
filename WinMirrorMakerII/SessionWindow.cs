@@ -42,9 +42,7 @@ namespace WinMirrorMakerII
 
         private void Begin(InputParameters parameters)
         {
-            SourceButon.Enabled = false;
-            DestinationButton.Enabled = false;
-            BackupLevelSelector.Enabled = false;
+            SetUiEnabledState(false);
             UpdateFieldsInAutoMode(parameters.Entries[0]);
 
             (_operationProgress, _) = parameters.KickOff();
@@ -54,7 +52,17 @@ namespace WinMirrorMakerII
                 _batchRunner.CurrentEntryChanged += BatchCurrentEntryChanged;
             }
             MonitorTimer.Start();
-            API.TaskbarManager.SetState(Handle, API.TaskbarManager.TaskbarStates.Normal);
+        }
+
+        private void SetUiEnabledState(bool state)
+        {
+            SourceButon.Enabled = state;
+            DestinationButton.Enabled = state;
+            BackupLevelSelector.Enabled = state;
+            ManualRun.Enabled = state;
+            ShowLog.Enabled = state;
+            API.TaskbarManager.SetState(Handle, state ? API.TaskbarManager.TaskbarStates.NoProgress : API.TaskbarManager.TaskbarStates.Normal);
+            API.TaskbarManager.SetValue(Handle, 0, 100);
         }
 
         private void BatchCurrentEntryChanged(object? sender, CurrentEntryEventArgs e)
@@ -90,14 +98,17 @@ namespace WinMirrorMakerII
             {
                 return;
             }
-            if (_operationProgress.Progress == 1 && _batchRunner == null)
+            if (_operationProgress.Progress == 1 && _batchRunner == null) //completed session in gui or single auto mode.
             {
                 MonitorTimer.Stop();
-                API.TaskbarManager.SetState(Handle, API.TaskbarManager.TaskbarStates.NoProgress);
-                if (_closeOnSessionComplete)
+                if (_closeOnSessionComplete) //single auto mode
                 {
                     Close();
                     return;
+                }
+                else //manual
+                {
+                    SetUiEnabledState(true);
                 }
             }
             Status.Text = _operationProgress.Current;
