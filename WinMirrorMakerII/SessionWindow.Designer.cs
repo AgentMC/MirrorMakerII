@@ -50,6 +50,7 @@
             this.folderLoader = new System.Windows.Forms.FolderBrowserDialog();
             this.ManualRun = new System.Windows.Forms.Button();
             this.ShowLog = new System.Windows.Forms.Button();
+            this.Cancel = new System.Windows.Forms.Button();
             this.BatchPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.BackupLevelSelector)).BeginInit();
             this.SuspendLayout();
@@ -255,11 +256,23 @@
             this.ShowLog.UseVisualStyleBackColor = true;
             this.ShowLog.Click += new System.EventHandler(this.ShowLog_Click);
             // 
+            // Cancel
+            // 
+            this.Cancel.Enabled = false;
+            this.Cancel.Location = new System.Drawing.Point(453, 100);
+            this.Cancel.Name = "Cancel";
+            this.Cancel.Size = new System.Drawing.Size(382, 23);
+            this.Cancel.TabIndex = 10;
+            this.Cancel.Text = "Cancel";
+            this.Cancel.UseVisualStyleBackColor = true;
+            this.Cancel.Click += new System.EventHandler(this.Cancel_Click);
+            // 
             // SessionWindow
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(959, 395);
+            this.Controls.Add(this.Cancel);
             this.Controls.Add(this.ShowLog);
             this.Controls.Add(this.ManualRun);
             this.Controls.Add(this.BackupLevelSelector);
@@ -310,5 +323,6 @@
         private FolderBrowserDialog folderLoader;
         private Button ManualRun;
         private Button ShowLog;
+        private Button Cancel;
     }
 }

@@ -61,6 +61,7 @@ namespace WinMirrorMakerII
             BackupLevelSelector.Enabled = state;
             ManualRun.Enabled = state;
             ShowLog.Enabled = state;
+            Cancel.Enabled = !state;
             API.TaskbarManager.SetState(Handle, state ? API.TaskbarManager.TaskbarStates.NoProgress : API.TaskbarManager.TaskbarStates.Normal);
             API.TaskbarManager.SetValue(Handle, 0, 100);
         }
@@ -144,6 +145,11 @@ namespace WinMirrorMakerII
         private void ShowLog_Click(object sender, EventArgs e)
         {
             new LogParser().ShowDialog();
+        }
+
+        private void Cancel_Click(object sender, EventArgs e)
+        {
+            _operationProgress?.Cancel();
         }
     }
 }

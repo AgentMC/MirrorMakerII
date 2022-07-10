@@ -13,6 +13,8 @@ namespace MirrorMakerIICore
 
         public string Current => $"Scanning: {_current}";
 
+        public void Cancel() { }
+
         public (FsItem, FsItem) Scan (string source, string destination, MMLogger l)
         {
             var scanners = new List<Thread>();
@@ -23,8 +25,8 @@ namespace MirrorMakerIICore
             DriveScanner scSrc = new(),
                          scDst = new();
             //Threads
-            Thread thSrc = new(() => fsSrc = RunInternal(source, scSrc)),
-                   thDst = new(() => fsDst = RunInternal(destination, scDst));
+            Thread thSrc = new(() => fsSrc = RunInternal(source, scSrc, l.Token)),
+                   thDst = new(() => fsDst = RunInternal(destination, scDst, l.Token));
 
             //Scan
             scanners.Add(thSrc);
@@ -40,9 +42,9 @@ namespace MirrorMakerIICore
             return (fsSrc, fsDst);
         }
 
-        private FsItem RunInternal(string path, DriveScanner scanner)
+        private FsItem RunInternal(string path, DriveScanner scanner, CancellationToken run)
         {
-            var result = scanner.ScanDirectory(path);
+            var result = scanner.ScanDirectory(path, run);
             Interlocked.Increment(ref _done);
             return result;
         }

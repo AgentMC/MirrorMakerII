@@ -10,6 +10,7 @@ namespace MirrorMakerIICore.Infra
         readonly char[] Separators = new[] { '[', ']' };
         readonly bool _disposable;
         bool _disposed;
+        CancellationTokenSource _tokenSource;
 
         internal MMLogger(string? filePath)
         {
@@ -26,6 +27,7 @@ namespace MirrorMakerIICore.Infra
                     _disposable = true;
                     break;
             }
+            _tokenSource = new CancellationTokenSource();
         }
 
         ~MMLogger()
@@ -40,6 +42,7 @@ namespace MirrorMakerIICore.Infra
                 if (_disposable && !_disposed)
                 {
                     _stream.Dispose();
+                    _tokenSource.Dispose();
                     _disposed = true;
                 }
                 GC.SuppressFinalize(this);
@@ -48,12 +51,14 @@ namespace MirrorMakerIICore.Infra
 
         public IProgressEx? StatusReflector { get; set; }
 
+        public CancellationToken Token => _tokenSource.Token;
+        public void TokenCancel() => _tokenSource.Cancel();
+
         private void Log(LogType lt, string message)
         {
             _stream.WriteLine($"{DateTime.Now:O}\t{lt}\t{message}");
             if (StatusReflector != null) StatusReflector.SetCurrent(message);
         }
-
         private void Log(LogType lt, string format, params object[] args)
         {
             Log(lt, string.Format(format, args.Select(a => Separators[0] + a.ToString() + Separators[1]).ToArray()));

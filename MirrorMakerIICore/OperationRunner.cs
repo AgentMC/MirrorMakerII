@@ -21,6 +21,8 @@ namespace MirrorMakerIICore
 
         public void SetCurrent(string value) => Current = value;
 
+        public void Cancel() { }
+
 
         public OperationRunner(MMLogger logger)
         {
@@ -42,8 +44,10 @@ namespace MirrorMakerIICore
              * 4. Copy new / updated files (no overwrite)                                               75%
              * 5. Delete folders if necessary, reverse-recoursive                                        3%
             */
+
             for (int i = 9; i > 0; i--)
             {
+                if (l.Token.IsCancellationRequested) return;
                 var backupFolderName = BackupFormat + i;
                 var oldPath = Path.Combine(destination, backupFolderName);
                 var newPath = Path.Combine(destination, BackupFormat + (i + 1));
@@ -63,15 +67,19 @@ namespace MirrorMakerIICore
             }
             Progress = 0.05;
             l.Basic("Backups refresh complete.");
+
             foreach (var createFolder in operation.FoldersToMaybeCreate)
             {
+                if (l.Token.IsCancellationRequested) return;
                 CreateFolderIfNecessaryRecoursive(createFolder, false);
                 Progress += 0.05 / operation.FoldersToMaybeCreate.Count;
             }
             Progress = 0.1;
+
             bool backupFolderCreated = false;
             foreach (var deleteFile in operation.FilesToDelete)
             {
+                if (l.Token.IsCancellationRequested) return;
                 if (backupLevel == 0)
                 {
                     DeleteOldFile(deleteFile);
@@ -91,21 +99,27 @@ namespace MirrorMakerIICore
                 Progress += 0.08 / operation.FilesToDelete.Count;
             }
             Progress = 0.18;
+
             foreach (var moveFile in operation.FilesToMove)
             {
+                if (l.Token.IsCancellationRequested) return;
                 MoveExistingFile(moveFile.From, moveFile.To, false);
                 Progress += 0.04 / operation.FilesToMove.Count;
             }
             Progress = 0.22;
+
             foreach (var copyFile in operation.FilesToCopy)
             {
+                if (l.Token.IsCancellationRequested) return;
                 Current = $"Copying file: {copyFile.From} => {copyFile.To}";
                 CopyNewFile(copyFile.From, copyFile.To);
                 Progress += 0.75 / operation.FilesToCopy.Count;
             }
             Progress = 0.97;
+
             foreach (var deleteFolder in operation.FoldersToMaybeDelete)
             {
+                if (l.Token.IsCancellationRequested) return;
                 DeleteOldFolderIfNecessaryRecursive(deleteFolder, destination);
                 Progress += 0.03 / operation.FoldersToMaybeDelete.Count;
             }
@@ -146,13 +160,26 @@ namespace MirrorMakerIICore
         {
             try
             {
-                File.Copy(from, to, false);
+                //File.Copy(from, to, false);
+                CopyNewFileCancellable(from, to).GetAwaiter().GetResult();
                 l.MirrorFileCopy(from, to);
+            }
+            catch(OperationCanceledException)
+            {
+                l.ErrorFileCopy(from, to, new Exception("Copying the file was cancelled mid-way. Removing the file..."));
+                DeleteOldFile(to);
             }
             catch (Exception ex)
             {
                 l.ErrorFileCopy(from, to, ex);
             }
+        }
+        async Task CopyNewFileCancellable(string from, string to)
+        {
+            const int BUFFER = 10/* * 1024*/ * 1024; //10KB seems to give a super-stable network performance (actually, better than Windows Copy dialog, with the cost of +1-2% CPU)
+            using var src = new StreamReader(from, new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read, BufferSize = BUFFER, Options = FileOptions.SequentialScan });
+            using var dst = new StreamWriter(to, new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, BufferSize = BUFFER, Share = FileShare.ReadWrite | FileShare.Delete, Options = FileOptions.SequentialScan });
+            await src.BaseStream.CopyToAsync(dst.BaseStream, BUFFER, l.Token);
         }
 
         void DeleteOldFile(string file)

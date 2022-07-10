@@ -12,6 +12,7 @@ namespace MirrorMakerIICore
             _total = entries.Count;
             foreach (var input in entries)
             {
+                if (logger.Token.IsCancellationRequested) break;
                 CurrentEntryChanged?.Invoke(this, new CurrentEntryEventArgs(input));
                 var session = new Session(logger);
                 _current = session;
@@ -20,6 +21,11 @@ namespace MirrorMakerIICore
                 _current = null;
             }
             CurrentEntryChanged?.Invoke(this, new CurrentEntryEventArgs(null));
+        }
+
+        public void Cancel()
+        {
+            _current?.Cancel();
         }
 
         public double Progress => (_totalComplete + (_current?.Progress ?? 0)) / _total;

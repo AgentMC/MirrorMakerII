@@ -11,6 +11,8 @@ namespace MirrorMakerIICore
 
         public string Current { get; private set; } = "Comparing...";
 
+        public void Cancel() { }
+
         public (OperationSummary, List<string>) Compare (FsItem fsSrc, FsItem fsDst, MMLogger l)
         {
             //The processing directive
@@ -21,14 +23,17 @@ namespace MirrorMakerIICore
 
             //Process file trees, find differences
             var backupFolders = RemoveBackups(fsDst);
+            if (l.Token.IsCancellationRequested) goto skip;
             Compare(fsSrc, fsDst);
             l.Basic("Compare complete.");
 
             //Classify differences found
+            if (l.Token.IsCancellationRequested) goto skip;
             FlattenTree(fsSrc, null, flSrc);
             FlattenTree(fsDst, null, flDst);
             l.Basic("Flattening complete.");
 
+            if (l.Token.IsCancellationRequested) goto skip;
             operation.FoldersToMaybeCreate = GetUniqueFolders(flSrc.Keys, flDst.Keys, fsSrc.Name, fsDst.Name).Select(f => fsDst.Name + f).ToList();
             operation.FoldersToMaybeDelete = GetUniqueFolders(flDst.Keys, flSrc.Keys, fsDst.Name, fsSrc.Name).Select(f => fsDst.Name + f).ToList();
             operation.FilesToMove = flDst.Select(d => new
@@ -66,6 +71,7 @@ namespace MirrorMakerIICore
             Current = "Sync preparation complete.";
             l.Basic(Current);
 
+            skip:
             return (operation, backupFolders);
         }
 
@@ -106,7 +112,7 @@ namespace MirrorMakerIICore
                             if (sItem.Items.Count == 0) source.Items.RemoveAt(s);
                             if (dItem.Items.Count == 0) destination.Items.RemoveAt(d);
                         }
-                        else if (sItem.LastModified == dItem.LastModified && sItem.Size == dItem.Size) //file is uidentical and not changed - remove from lists = do not touch
+                        else if (sItem.LastModified == dItem.LastModified && sItem.Size == dItem.Size) //file is identical and not changed - remove from lists = do not touch
                         {
                             source.Items.RemoveAt(s);
                             destination.Items.RemoveAt(d);
