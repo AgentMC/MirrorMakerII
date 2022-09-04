@@ -17,7 +17,7 @@ namespace MirrorMakerIICore
 
         public double Progress { get; private set; }
 
-        public string Current { get; private set; } = "Starting file operations.";
+        public string Current { get; private set; } = "Starting file operations. Verifying backups.";
 
         public void SetCurrent(string value) => Current = value;
 
@@ -27,7 +27,6 @@ namespace MirrorMakerIICore
         public OperationRunner(MMLogger logger)
         {
             l = logger;
-            l.StatusReflector = this;
         }
 
         public void Run (OperationSummary operation, List<string> backupFolders, int backupLevel, string destination)
@@ -45,6 +44,7 @@ namespace MirrorMakerIICore
              * 5. Delete folders if necessary, reverse-recoursive                                        3%
             */
 
+            l.StatusReflector = this;
             for (int i = 9; i > 0; i--)
             {
                 if (l.Token.IsCancellationRequested) return;
@@ -176,10 +176,21 @@ namespace MirrorMakerIICore
         }
         async Task CopyNewFileCancellable(string from, string to)
         {
-            const int BUFFER = 10/* * 1024*/ * 1024; //10KB seems to give a super-stable network performance (actually, better than Windows Copy dialog, with the cost of +1-2% CPU)
-            using var src = new StreamReader(from, new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read, BufferSize = BUFFER, Options = FileOptions.SequentialScan });
-            using var dst = new StreamWriter(to, new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, BufferSize = BUFFER, Share = FileShare.ReadWrite | FileShare.Delete, Options = FileOptions.SequentialScan });
-            await src.BaseStream.CopyToAsync(dst.BaseStream, BUFFER, l.Token);
+            {   //Setting content
+                const int BUFFER = 10/* * 1024*/ * 1024; //10KB seems to give a super-stable network performance (actually, better than Windows Copy dialog, with the cost of +1-2% CPU)
+                using var src = new StreamReader(from, new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read, BufferSize = BUFFER, Options = FileOptions.SequentialScan });
+                using var dst = new StreamWriter(to, new FileStreamOptions { Mode = FileMode.CreateNew, Access = FileAccess.Write, BufferSize = BUFFER, Share = FileShare.ReadWrite | FileShare.Delete, Options = FileOptions.SequentialScan });
+                await src.BaseStream.CopyToAsync(dst.BaseStream, BUFFER, l.Token);
+            }
+            {   //copying attributes
+                var infoFrom = new FileInfo(from);
+                var infoTo = new FileInfo(to);
+                if (l.Token.IsCancellationRequested) return;
+                infoTo.Attributes = infoFrom.Attributes;
+                infoTo.CreationTimeUtc = infoFrom.CreationTimeUtc;
+                infoTo.LastAccessTimeUtc = infoFrom.LastAccessTimeUtc;
+                infoTo.LastWriteTimeUtc = infoFrom.LastWriteTimeUtc;
+            }
         }
 
         void DeleteOldFile(string file)
