@@ -108,28 +108,30 @@ namespace WinMirrorMakerII
                 }
                 if (from != null)
                 {
-                    Color background;
-                    Brush foreground;
+                    Color background, foreground;
                     var text = to != null ? $"{from} => {to}" : from;
                     if (error != null)
                     {
                         text = $"ERROR {text} : {error}";
                         background = e.BackColor;
-                        foreground = Brushes.Red;
+                        foreground = Color.Red;
                     }
                     else
                     {
-                        foreground = Brushes.Black;
                         var key = Path.GetExtension(from);
                         if (string.IsNullOrEmpty(key) || !fileMarkers.TryGetValue(key.ToLower(), out background))
                         {
                             background = e.BackColor;
+                            foreground = e.ForeColor;
+                        }
+                        else
+                        {
+                           foreground = Color.Black;
                         }
                     }
                     e.Graphics.SetClip(e.Bounds);
                     e.Graphics.Clear(background);
-                    e.Graphics.TextRenderingHint = System.Drawing.Text.TextRenderingHint.ClearTypeGridFit;
-                    e.Graphics.DrawString(text, e.Font ?? lb.Font, foreground, e.Bounds, new StringFormat { Alignment = StringAlignment.Near, FormatFlags = StringFormatFlags.FitBlackBox | StringFormatFlags.NoWrap | StringFormatFlags.NoClip, Trimming = StringTrimming.None, LineAlignment = StringAlignment.Far});
+                    TextRenderer.DrawText(e.Graphics, text, e.Font, e.Bounds, foreground, TextFormatFlags.Left | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix | TextFormatFlags.PreserveGraphicsClipping | TextFormatFlags.NoPadding);
                     if (e.Index == lb.SelectedIndex) e.DrawFocusRectangle();
                 }
                 else
