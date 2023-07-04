@@ -5,7 +5,7 @@
     },
     "WMM - backup single": {
       "commandName": "Project",
-      "commandLineArgs": "D:\\hackd Z:\\Backup\\Mike 1"
+      "commandLineArgs": "C:\\users\\hackd\\c Z:\\Backup\\Mike 1"
     },
     "WMM - backup multi": {
       "commandName": "Project",

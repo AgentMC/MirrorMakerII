@@ -8,6 +8,7 @@ namespace WinMirrorMakerII
         public SessionWindow()
         {
             InitializeComponent();
+            Text += Shared.Version;
         }
 
         private IProgress? _operationProgress;

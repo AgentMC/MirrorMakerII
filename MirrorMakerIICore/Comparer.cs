@@ -19,7 +19,9 @@ namespace MirrorMakerIICore
             OperationSummary operation = new();
             //Flat views of the tree diffs
             Dictionary<string, FsItem> flSrc = new(),
-                                       flDst = new();
+                                       flDst = new(),
+                                       edSrc = new(),
+                                       edDst = new();
 
             //Process file trees, find differences
             var backupFolders = RemoveBackups(fsDst);
@@ -29,13 +31,19 @@ namespace MirrorMakerIICore
 
             //Classify differences found
             if (l.Token.IsCancellationRequested) goto skip;
-            FlattenTree(fsSrc, null, flSrc);
-            FlattenTree(fsDst, null, flDst);
+            FlattenTree(fsSrc, null, flSrc, edSrc);
+            FlattenTree(fsDst, null, flDst, edDst);
             l.Basic("Flattening complete.");
 
             if (l.Token.IsCancellationRequested) goto skip;
+            //Creating new folders list - including those which have files in Source.
+            //The edSrc collection can be added here to generate folders which are empty in the source, but for now we do not do it
             operation.FoldersToMaybeCreate = GetUniqueFolders(flSrc.Keys, flDst.Keys, fsSrc.Name, fsDst.Name).Select(f => fsDst.Name + f).ToList();
+            //Creating folders to be deleted list - including those which only exist in Destination.
+            //We append unique entries from edDst collection here. There may be an overlap, and a bit of waste, but the recuirsive deleter will take care of it.
             operation.FoldersToMaybeDelete = GetUniqueFolders(flDst.Keys, flSrc.Keys, fsDst.Name, fsSrc.Name).Select(f => fsDst.Name + f).ToList();
+            operation.FoldersToMaybeDelete.AddRange(edDst.Keys.Distinct().Except(operation.FoldersToMaybeDelete));
+            //Detecting moved files
             operation.FilesToMove = flDst.Select(d => new
                                          {
                                              From = d.Key,
@@ -61,6 +69,7 @@ namespace MirrorMakerIICore
             //operation.FilesToDelete = flDst.Keys.Where(d => !flSrc.ContainsKey(Rebase(d, fsDst.Name, fsSrc.Name))).ToList();
             //however, for the backup purposes, we also want to take the files that were updated, and will be overwritten
             operation.FilesToDelete = flDst.Keys.ToList();
+            //Finally what remains in source - left for copy
             operation.FilesToCopy = flSrc.Keys.Select(k => new FileReference()
                                                {
                                                    From = k,
@@ -122,18 +131,25 @@ namespace MirrorMakerIICore
             }
         }
 
-        static void FlattenTree(FsItem fsItem, string? location, Dictionary<string, FsItem> host)
+        static void FlattenTree(FsItem fsItem, string? location, Dictionary<string, FsItem> flatFileList, Dictionary<string, FsItem> flatEmptyDirList)
         {
             location = (location ?? string.Empty) + (fsItem.Name + Path.DirectorySeparatorChar);
             foreach (var item in fsItem.Items)
             {
                 if (item.IsDir)
                 {
-                    FlattenTree(item, location, host);
+                    if(item.Items.Count > 0)
+                    {
+                        FlattenTree(item, location, flatFileList, flatEmptyDirList);
+                    }
+                    else
+                    {
+                        flatEmptyDirList[location + item.Name] = item;
+                    }
                 }
                 else
                 {
-                    host[location + item.Name] = item;
+                    flatFileList[location + item.Name] = item;
                 }
             }
         }

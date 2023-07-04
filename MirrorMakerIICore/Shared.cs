@@ -1,4 +1,5 @@
 ﻿using MirrorMakerIICore.Infra;
+using System.Reflection;
 
 namespace MirrorMakerIICore
 {
@@ -18,6 +19,8 @@ namespace MirrorMakerIICore
         public static InputParameters ParseArguments(string[] args) => new(args);
 
         public static LogDataFile ParseDefaultLogFile() => new(DefaultLogFileName);
+
+        public static string Version => $" v.{Assembly.GetEntryAssembly()?.GetName()?.Version}";
     }
 
     public enum RunMode

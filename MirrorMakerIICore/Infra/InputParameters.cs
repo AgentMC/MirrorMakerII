@@ -60,7 +60,7 @@ namespace MirrorMakerIICore.Infra
             else
             {
                 Error =
-@"Mirror Maker II is a one-directional folder sync tool supporting nested increnmental backup system.
+"Mirror Maker II " + Shared.Version + @" is a one-directional folder sync tool supporting nested increnmental backup system.
 
 1. Default invokation: MMII.exe Source Destination [Backup level]
 

@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "MirrorMakerII": {
+      "commandName": "Project",
+      "commandLineArgs": "/?"
+    }
+  }
+}
