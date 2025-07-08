@@ -24,6 +24,7 @@ namespace MirrorMakerIICore.Infra
         {
             if (startEntry.EntryType != LogType.STA) throw new Exception("Missing Starting entry");
             Start = startEntry.Timestamp;
+            End = Start;
             From = startEntry.Tags[0];
             To = startEntry.Tags[1];
             Backup = startEntry.Tags[2];
@@ -96,7 +97,7 @@ namespace MirrorMakerIICore.Infra
 
         public override string ToString()
         {
-            return $"{Start} {From} => {To} ({Backup}) : {Duration}";
+            return $"{Start} {From} => {To} ({Backup}) : {(Duration.Ticks == 0 ? "Unfinished" : Duration)}";
         }
     }
 }
