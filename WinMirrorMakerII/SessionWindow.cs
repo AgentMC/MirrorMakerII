@@ -9,6 +9,7 @@ namespace WinMirrorMakerII
         {
             InitializeComponent();
             Text += Shared.Version;
+            ShowLog.Enabled = Shared.DefaultLogFileExists;
         }
 
         private IProgress? _operationProgress;

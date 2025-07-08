@@ -20,6 +20,8 @@ namespace MirrorMakerIICore
 
         public static LogDataFile ParseDefaultLogFile() => new(DefaultLogFileName);
 
+        public static bool DefaultLogFileExists { get => File.Exists(DefaultLogFileName); }
+
         public static string Version => $" v.{Assembly.GetEntryAssembly()?.GetName()?.Version}";
     }
 
