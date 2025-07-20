@@ -1,5 +1,5 @@
-﻿using ErrorableSource = System.Tuple<string, string?>;
-using ErrorableSourceDestination = System.Tuple<string, string, string?>;
+﻿using ErrorableSource = System.ValueTuple<string, string?>;
+using ErrorableSourceDestination = System.ValueTuple<string, string, string?>;
 
 namespace MirrorMakerIICore.Infra
 {

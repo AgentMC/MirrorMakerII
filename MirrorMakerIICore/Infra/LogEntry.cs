@@ -7,7 +7,7 @@ namespace MirrorMakerIICore.Infra
         private class LogMapper : IReadOnlyList<string>
         {
             private readonly string source;
-            private List<Tuple<int, int>>? pointers;
+            private List<ValueTuple<int, int>>? pointers;
 
             public LogMapper(string source)
             {
@@ -16,8 +16,8 @@ namespace MirrorMakerIICore.Infra
 
             public void Add(int start, int end)
             {
-                if (pointers == null) pointers = new List<Tuple<int, int>>();
-                pointers.Add(Tuple.Create(start, end));
+                if (pointers == null) pointers = new List<ValueTuple<int, int>>();
+                pointers.Add(ValueTuple.Create(start, end));
             }
 
             public string this[int index]
@@ -84,19 +84,18 @@ namespace MirrorMakerIICore.Infra
             var mapper = new LogMapper(Message);
             Tags = mapper;
 
-            int open = -1;
+            int open = -1, level = -1;
             for (int i = 0; i < Message.Length; i++)
             {
                 switch (Message[i])
                 {
                     case '[':
-                        open = i;
+                        level++;
+                        if (level == 0) open = i;
                         break;
                     case ']':
-                        if (open != -1)
-                        {
-                            mapper.Add(++open, i);
-                        }
+                        if (open != -1 && level == 0) mapper.Add(++open, i);
+                        level--;
                         break;
                     default:
                         break;
