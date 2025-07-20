@@ -1,7 +1,9 @@
 ﻿using System.Collections;
+using System.Diagnostics;
 
 namespace MirrorMakerIICore.Infra
 {
+    [DebuggerDisplay("{Timestamp}\t{EntryType}\t{Message} ({Tags.Count} tokens)")]
     public class LogEntry
     {
         private class LogMapper : IReadOnlyList<string>

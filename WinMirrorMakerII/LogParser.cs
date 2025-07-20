@@ -95,16 +95,20 @@ namespace WinMirrorMakerII
                 var lb = (ListBox)sender;
                 var item = lb.Items[e.Index];
                 string? from = null, to = null, error = null;
-                if (item is Tuple<string, string?> tuple2)
+                if (item is ValueTuple<string, string?> tuple2)
                 {
                     from = tuple2.Item1;
                     error = tuple2.Item2;
                 }
-                else if (item is Tuple<string, string, string?> tuple3)
+                else if (item is ValueTuple<string, string, string?> tuple3)
                 {
                     from = tuple3.Item1;
                     to = tuple3.Item2;
                     error = tuple3.Item3;
+                }
+                else
+                {
+                    throw new ArgumentException("Unsupported entry type: " + item.GetType());
                 }
                 if (from != null)
                 {
@@ -126,7 +130,7 @@ namespace WinMirrorMakerII
                         }
                         else
                         {
-                           foreground = Color.Black;
+                            foreground = Color.Black;
                         }
                     }
                     e.Graphics.SetClip(e.Bounds);
