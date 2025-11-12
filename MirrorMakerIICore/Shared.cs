@@ -27,6 +27,6 @@ namespace MirrorMakerIICore
 
     public enum RunMode
     {
-        Default, Batch, Gui
+        AutoSingle, AutoBatch, Gui
     }
 }

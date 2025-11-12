@@ -19,8 +19,8 @@ namespace WinMirrorMakerII
 
         public SessionWindow(InputParameters parameters): this()
         {
-            //Gui or Default - hide batch section
-            if (parameters.Mode != RunMode.Batch)
+            //Gui or AutoSingle (Default) - hide batch section
+            if (parameters.Mode != RunMode.AutoBatch)
             {
                 Height -= BatchPanel.Height;
                 BatchPanel.Height = 0;
@@ -122,7 +122,7 @@ namespace WinMirrorMakerII
                 TotalProgress.Value = totalProgress;
                 SessionProgress.Value = (int)(_batchRunner.CurrentEntryProgress * 100);
             }
-            else //Gui or Default
+            else //Gui or AutoSingle(Default)
             {
                 SessionProgress.Value = totalProgress;
             }

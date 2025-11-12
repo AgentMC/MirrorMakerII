@@ -10,9 +10,9 @@ namespace MirrorMakerIICore.Infra
         public readonly string? Error;
         public readonly RunMode Mode;
 
-        public InputParameters(string Source, string Destination, int Backup) : this(Array.Empty<string>()) 
+        public InputParameters(string Source, string Destination, int Backup) : this([]) 
         {
-            Mode = RunMode.Default;
+            Mode = RunMode.AutoSingle;
             ((List<InputEntry>)Entries).Add(new InputEntry(Source, Destination, Backup));
         }
 
@@ -22,7 +22,7 @@ namespace MirrorMakerIICore.Infra
             Entries = entries;
             if (args.Length == 1 && File.Exists(args[0]))
             {
-                Mode = RunMode.Batch;
+                Mode = RunMode.AutoBatch;
                 using var batchInput = new StreamReader(args[0], Encoding.UTF8);
                 string? row;
                 int rowNr = 0;
@@ -44,7 +44,7 @@ namespace MirrorMakerIICore.Infra
             }
             else if (args.Length == 2 || args.Length == 3)
             {
-                Mode = default;
+                Mode = RunMode.AutoSingle;
                 var check = CheckArgs(args);
                 if (check.Item2 != null)
                 {
@@ -151,9 +151,9 @@ as explained above. Empty rows are ignored. Comments are supported when line sta
         {
             if (Error != null || Mode == RunMode.Gui)
             {
-                throw new InvalidOperationException("Auto kick-off only possible when no Error parsed and Mode is Default or Batch");
+                throw new InvalidOperationException("Auto kick-off only possible when no Error parsed and Mode is Automatic (Default - AutoSingle or Batch)!");
             }
-            if (Mode == RunMode.Default)
+            if (Mode == RunMode.AutoSingle)
             {
                 return Run(() => new Session(logger), (s) => s.Run(Entries[0]));
             }

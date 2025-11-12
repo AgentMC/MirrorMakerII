@@ -11,8 +11,8 @@ if(parameters.Error != null)
 
 switch (parameters.Mode)
 {
-    case RunMode.Default:
-    case RunMode.Batch:
+    case RunMode.AutoSingle:
+    case RunMode.AutoBatch:
         var (operation, _) = parameters.KickOff();
         Monitor(operation);
         break;
